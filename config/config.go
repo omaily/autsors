@@ -37,7 +37,7 @@ func MustLoad() *Config {
 	once.Do(func() {
 		slog.Info("read application configuration")
 		cfg = Config{}
-		if err := cleanenv.ReadConfig("config/local.yaml", &cfg); err != nil {
+		if err := cleanenv.ReadConfig("config/config.yml", &cfg); err != nil {
 			slog.Error("cannot read config: %s", err)
 		}
 	})

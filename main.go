@@ -1,19 +1,23 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"net/http"
+	"log/slog"
+
+	"june+/config"
 )
 
 func main() {
 	fmt.Println("hello my friend")
 
-	stor := http.NewServeMux()
-	stor.HandleFunc("POST /api/v1/wallet", postWallet)
-	stor.HandleFunc("GET /api/v1/wallet/{uuid}", getWallet)
+	conf := config.MustLoad()
 
-	if err := http.ListenAndServe(":8000", stor); err != nil {
-		panic(err)
+	serv, err := NewServer(context.Background(), conf)
+	if err != nil {
+		slog.Error("could not initialize server: %w", err)
+		return
 	}
 
+	serv.Start()
 }
