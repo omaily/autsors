@@ -1,4 +1,4 @@
-module june+
+module github.com/omaily/autsors
 
 go 1.23.3
 

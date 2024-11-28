@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 
-	"june+/config"
+	"github.com/omaily/autsors/config"
 )
 
 func main() {

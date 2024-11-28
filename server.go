@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"june+/config"
 	"log/slog"
 	"net/http"
 	"os"
@@ -12,6 +11,8 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/omaily/autsors/config"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )

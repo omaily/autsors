@@ -1,14 +1,13 @@
 FROM golang:1.23 as autstore
 
-RUN apt-get update && apt-get install -y curl
+ENV CGO_ENABLED 0
+ENV GOOS linux
 
+# RUN apt-get update && apt-get install -y curl
 WORKDIR /app
 
-COPY go.mod go.sum ./
+COPY ./ ./
 RUN go mod download
+RUN CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -o autstore .
 
-COPY *.go ./
-# Установка curl 
-RUN go mod init autstor && go build 
-
-CMD ["./autstor"]
+CMD [".autstore"]
