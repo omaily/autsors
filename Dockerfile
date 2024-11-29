@@ -7,7 +7,9 @@ ENV GOOS linux
 WORKDIR /app
 
 COPY ./ ./
+
 RUN go mod download
+RUN sh -s -- -b $(go env GOPATH)/bin
 RUN CGO_ENABLED=0 GOARCH=amd64 GOOS=linux go build -o autstore .
 
-CMD [".autstore"]
+CMD ["sh /app/crutch.sh"]

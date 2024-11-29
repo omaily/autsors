@@ -8,20 +8,15 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 	"time"
 
 	"github.com/omaily/autsors/config"
-
-	"github.com/jackc/pgx/v5/pgxpool"
 )
-
-var pgOnce sync.Once
 
 type APIServer struct {
 	conf    *config.HTTPServer
-	storage *pgxpool.Pool
+	storage *Storage
 }
 
 func NewServer(ctx context.Context, conf *config.Config) (*APIServer, error) {
@@ -34,19 +29,14 @@ func NewServer(ctx context.Context, conf *config.Config) (*APIServer, error) {
 		return nil, errors.New("configuration address cannot be blank")
 	}
 
-	var pgInstance *pgxpool.Pool
-	pgOnce.Do(func() {
-		pool, err := pgxpool.New(ctx, fmt.Sprintf("postgres://%s:%s@%s/%s", (*conf).Role, (*conf).Pass, (*conf).Host /*,(*cs).Port*/, (*conf).Database))
-		if err != nil {
-			slog.Error("unable to create connection pool: %w", err)
-			return
-		}
-		pgInstance = pool
-	})
+	storage, err := NewStorage(ctx, &conf.Storage)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("could not initialize storage: %s", err))
+	}
 
 	return &APIServer{
 		conf:    http,
-		storage: pgInstance,
+		storage: storage,
 	}, nil
 }
 
@@ -73,15 +63,17 @@ func (s *APIServer) Start() error {
 	<-stop
 
 	slog.Info("stopping server due to syscall or collapse")
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+	defer s.storage.pool.Close()
 	return srv.Shutdown(ctx)
 }
 
 func (s *APIServer) router() http.Handler {
 	router := http.NewServeMux()
-	router.HandleFunc("POST /api/v1/wallet", postWallet)
-	router.HandleFunc("GET /api/v1/wallet/{uuid}", getWallet)
+	router.HandleFunc("POST /api/v1/wallet", postWallet(s.storage))
+	router.HandleFunc("GET /api/v1/wallets/{uuid}", getWallet(s.storage))
 
 	return router
 }

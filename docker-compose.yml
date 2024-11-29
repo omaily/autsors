@@ -9,10 +9,8 @@ services:
       dockerfile: Dockerfile #Сам файл
       target: autstore #этап FROM в Dockerfile 
     restart: always
-    environment:
-      API_SERVER_ADDR: ":8000"
     ports:
-      - 8000:8000
+      - 8080:8000
     volumes:
       - .:/app
     links: #связывает контейнер app контейнером db
@@ -27,7 +25,7 @@ services:
     ports:
       - 5432:5432
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./postgres_data/init.sql:/docker-entrypoint-initdb.d/1-init.sql
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
