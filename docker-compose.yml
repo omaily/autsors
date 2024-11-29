@@ -9,8 +9,6 @@ services:
       dockerfile: Dockerfile #Сам файл
       target: autstore #этап FROM в Dockerfile 
     restart: always
-    # volumes:
-    #   - .:/app
     ports:
       - 8080:8080
     networks:
