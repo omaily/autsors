@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"sync"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/omaily/autsors/config"
 )
@@ -14,7 +13,6 @@ import (
 type Storage struct {
 	conf *config.Storage
 	pool *pgxpool.Pool
-	User
 }
 
 var pgOnce sync.Once
@@ -22,10 +20,10 @@ var pgOnce sync.Once
 func NewStorage(ctx context.Context, conf *config.Storage) (*Storage, error) {
 	var pgInstance *Storage
 	pgOnce.Do(func() {
-		dbPath := fmt.Sprintf("postgres://%s:%s@%s/%s", conf.Role, conf.Pass, conf.Host /*,(*cs).Port*/, conf.Database)
+		dbPath := fmt.Sprintf("postgres://%s:%s@%s:5432/%s", conf.Role, conf.Pass, conf.Host, conf.Database)
 		pool, err := pgxpool.New(ctx, dbPath)
 		if err != nil {
-			slog.Error("unable to create connection pool: %w", err)
+			slog.Error("unable to create connection pool", slog.String("err", err.Error()))
 			return
 		}
 		pgInstance = &Storage{conf: conf, pool: pool}
@@ -33,21 +31,21 @@ func NewStorage(ctx context.Context, conf *config.Storage) (*Storage, error) {
 	return pgInstance, nil
 }
 
-func (s *Storage) getAmount(ctx context.Context, uuid string) (int, error) {
-	query := `select amount from account where uuid = @uuid`
-	args := pgx.NamedArgs{
-		"uuid": uuid,
-	}
-	row := s.pool.QueryRow(context.Background(), query, args)
+func (s *Storage) getAmount(ctx context.Context, uuid string) (string, error) {
+	query := `select name from account where id = $1`
+	typeString := struct{ st string }{st: ""}
 
-	var val int
-	err := row.Scan(&val)
+	slog.Info("Pre scan")
+	row := s.pool.QueryRow(ctx, query, 1)
+	err := row.Scan(&typeString.st)
 	if err != nil {
-		slog.Error("Error Fetching Book Details: %w", err)
-		return 0, err
+		slog.Error("Error Fetching Book Details: %w", slog.String("err", err.Error()))
+		return "nil", err
 	}
+	slog.Info("after scan")
+	slog.Info(typeString.st)
 
-	return val, nil
+	return typeString.st, nil
 }
 
 func (s *Storage) depositPay(ctx context.Context, val int) error {

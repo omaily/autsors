@@ -3,10 +3,9 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 )
 
-func getWallet(user IUser) http.HandlerFunc {
+func getWallet(user *Storage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		uuid := r.PathValue("uuid")
 		w.Write([]byte(fmt.Sprintf("Hello %s!", uuid)))
@@ -16,18 +15,13 @@ func getWallet(user IUser) http.HandlerFunc {
 			w.Write([]byte(err.Error()))
 			return
 		}
-		w.Write([]byte(strconv.Itoa(amount)))
+
+		w.Write([]byte(amount))
 	}
 }
 
-func postWallet(user IUser) http.HandlerFunc {
+func postWallet(user *Storage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			w.Write([]byte("i "))
-			return
-		}
-
-		w.Write([]byte(`Hello`))
+		w.Write([]byte(`post and handler`))
 	}
 }
