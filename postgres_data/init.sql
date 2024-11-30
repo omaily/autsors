@@ -1,9 +1,13 @@
+SET client_encoding = 'UTF8';
+
 CREATE TABLE account (
-    id SERIAL PRIMARY KEY,
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     uuid TEXT NOT NULL,
     name TEXT NOT NULL, 
     amount INT
 );
+
+CREATE UNIQUE INDEX idx_account_uuid ON account(uuid);
 
 INSERT INTO account (uuid, name, amount) 
     VALUES ('00000000-0000-0000-0000-000000000001', 'Алеша', 52);

@@ -5,6 +5,7 @@ ENV GOARCH amd64
 ENV GOOS linux
 
 RUN apt-get update && apt-get install -y curl 
+RUN apk bash git gcc musl-dev
 WORKDIR /app
 
 COPY ./ ./
